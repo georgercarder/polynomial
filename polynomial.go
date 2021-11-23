@@ -54,7 +54,7 @@ func (ps PolynomialSlice) Multiply() (ret *Polynomial) {
   case 0:
     ret = NewPolynomialInt(0)
   case 1:
-    ret = ps[1]
+    ret = ps[0]
   case 2:
     ret = PolynomialMultiplication(ps[0], ps[1])
   default:
