@@ -7,7 +7,7 @@ import (
 type Polynomial struct {
   Coefficients []*big.Int
   // always ordered
-  // for polynomial of degree n len(Coefficients) == n
+  // for polynomial of degree n len(Coefficients) == n+1
 }
 
 type PolynomialSlice []*Polynomial
