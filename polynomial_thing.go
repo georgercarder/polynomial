@@ -11,6 +11,14 @@ type polynomialThing interface {
   toSoloTerm() *term
 }
 
+func mulCH(a, b polynomialThing) (<- chan *Polynomial) {
+  polynomialCH := make(chan *Polynomial)
+  go func(aa, bb polynomialThing) {
+    polynomialCH <- mul(aa, bb)
+  }(a, b)
+  return polynomialCH
+}
+
 func mul(a, b polynomialThing) (ret *Polynomial) {
   if a.isSoloTerm() && b.isSoloTerm() {
     ret = multiplyTerms(a, b)
