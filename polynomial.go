@@ -1,6 +1,7 @@
 package polynomial
 
 import (
+  "fmt"
   "math/big"
 )
 
@@ -75,14 +76,58 @@ func (ps PolynomialSlice) Multiply() (ret *Polynomial) {
 }
 
 type term struct {
-  coefficient, degree *big.Int
+  coefficient, degree_ *big.Int
+}
+
+func (t *term) isSoloTerm() (tf bool) {
+  tf = true
+  return
+}
+
+func (t *term) degree() (ret *big.Int) {
+  ret = t.degree_
+  return
+}
+
+func (t *term) coefficients() (ret []*big.Int) {
+  ret = append(ret, t.coefficient)
+  return
 }
 
 func (p *Polynomial) head() (t *term) {
   degree := len(p.Coefficients)
   t = &term{
         coefficient: p.Coefficients[degree-1], 
-        degree: new(big.Int).SetInt64(int64(degree))} // TODO double check indexing
+        degree_: new(big.Int).SetInt64(int64(degree))} // TODO double check indexing
+  return
+}
+
+func (p *Polynomial) isSoloTerm() (tf bool) {
+  lenCoefficients := len(p.Coefficients)
+  tf = true // covers both 0,1 cases
+  if lenCoefficients == 0 {
+    // weird edge case
+    p = NewPolynomialInt(0) // putting here for in case its being operated on 
+    fmt.Println("debug log weird edge case")
+  } else if lenCoefficients > 1 {
+    tf = false
+  }
+  return
+}
+
+func (p *Polynomial) degree() (ret *big.Int) {
+  lenCoefficients := len(p.Coefficients)
+  if lenCoefficients == 0 {
+    // weird edge case
+    p = NewPolynomialInt(0) // putting here for in case its being operated on 
+    fmt.Println("debug log weird edge case")
+  }
+  ret = new(big.Int).SetInt64(int64(len(p.Coefficients)-1))  
+  return
+}
+
+func (p *Polynomial) coefficients() (ret []*big.Int) {
+  ret = p.Coefficients
   return
 }
 
