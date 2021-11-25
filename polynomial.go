@@ -72,7 +72,7 @@ func (p *Polynomial) Add(a, b *Polynomial) (ret *Polynomial) {
     coefficientArray = append(coefficientArray, coefficient) 
   }
   coefficientArray = append(coefficientArray, 
-                      greaterDegreePolynomial.Coefficients[len(coefficientArray):]...) // TODO check if there is index error
+                      greaterDegreePolynomial.Coefficients[len(coefficientArray):]...)
   ret = NewPolynomialFromArray(coefficientArray)
   return
 } 
@@ -87,18 +87,15 @@ func (ps PolynomialSlice) Multiply() (ret *Polynomial) {
     ret = PolynomialMultiplication(ps[0], ps[1])
   default:
     half := len(ps)/2
-    firstHalf := ps[:half] // FIXME double check indexing 
+    firstHalf := ps[:half]
     secondHalf := ps[half:] 
-    //firstHalfProductCH := make(chan *Polynomial)
-    /*go func(fh PolynomialSlice) {
+    firstHalfProductCH := make(chan *Polynomial)
+    go func(fh PolynomialSlice) {
       firstHalfProductCH <- fh.Multiply()
-    }(firstHalf)*/
-    firstHalfProduct := firstHalf.Multiply()
-    
+    }(firstHalf)
     secondHalfProduct := secondHalf.Multiply()
     var twoFactors PolynomialSlice
-    //twoFactors = append(twoFactors, <-firstHalfProductCH)
-    twoFactors = append(twoFactors, firstHalfProduct)
+    twoFactors = append(twoFactors, <-firstHalfProductCH)
     twoFactors = append(twoFactors, secondHalfProduct)
     ret = twoFactors.Multiply()
   }
@@ -174,7 +171,7 @@ func (p *Polynomial) coefficients() (ret []*big.Int) {
 
 func (p *Polynomial) tail() (ret *Polynomial) {
   degree := len(p.Coefficients)
-  ret = NewPolynomialFromArray(p.Coefficients[:degree-1]) // TODO double check indexing
+  ret = NewPolynomialFromArray(p.Coefficients[:degree-1])
   return
 }
 
