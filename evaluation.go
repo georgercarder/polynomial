@@ -18,14 +18,19 @@ func (p *Polynomial) Evaluate(input interface{}) (ret *big.Int) {
   ret = new(big.Int).SetInt64(0) // in case there are no terms
   idx := new(big.Int).SetInt64(0)
   one := new(big.Int).SetInt64(1)
-  var variableToPower *big.Int
-  var term *big.Int
-  // TODO make this concurrent
+  termCH := make(chan *big.Int)
   for _, c := range p.Coefficients {
-    variableToPower = new(big.Int).Exp(bInput, idx, nil) // nil means no modulus
+    go func(cc, iidx *big.Int) { 
+      // these go-routines are assuming that Exp can be expensive
+      // TODO benchmark vs no threads
+      variableToPower := new(big.Int).Exp(bInput, iidx, nil) // nil means no modulus
+      term := new(big.Int).Mul(cc, variableToPower)
+      termCH <- term 
+    }(c, idx)
     idx = new(big.Int).Add(idx, one)
-    term = new(big.Int).Mul(c, variableToPower)
-    ret = new(big.Int).Add(ret, term)
+  }
+  for i:=0; i<len(p.Coefficients); i++ {
+    ret = new(big.Int).Add(ret, <-termCH)
   }
   return
 }
