@@ -8,18 +8,17 @@ type polynomialThing interface {
   isSoloTerm() bool 
   degree() *big.Int 
   coefficients() []*big.Int
+  toSoloTerm() *term
 }
 
 func mul(a, b polynomialThing) (ret *Polynomial) {
   if a.isSoloTerm() && b.isSoloTerm() {
     ret = multiplyTerms(a, b)
-    return
   } else if !a.isSoloTerm() && !b.isSoloTerm() {
     // this should repeat ... logic of `PolynomialMultiplication`
     ret = BinomialMultiplication(
         NewBinomial(a.(*Polynomial).head(), a.(*Polynomial).tail()),
         NewBinomial(b.(*Polynomial).head(), b.(*Polynomial).tail()))
-    return
   } else {  
     ret = distributeTermAcrossPolynomial(a, b)
   }
@@ -37,8 +36,7 @@ func multiplyTerms(a, b polynomialThing) (ret *Polynomial) {
     coefficientArray = append(coefficientArray, zero) 
     idx = new(big.Int).Add(idx, bigOne) // idx++
   }
-  // replace last with the product
-  coefficientArray[len(coefficientArray)-1] = coefficientProduct
+  coefficientArray = append(coefficientArray, coefficientProduct)
   ret = NewPolynomialFromArray(coefficientArray)
   return
 }
@@ -47,10 +45,10 @@ func distributeTermAcrossPolynomial(a, b polynomialThing) (ret *Polynomial) {
   var soloTerm *term
   var polynomial *Polynomial
   if a.isSoloTerm() {
-    soloTerm = a.(*term)
+    soloTerm = a.toSoloTerm()
     polynomial = b.(*Polynomial)
   } else {
-    soloTerm = b.(*term)
+    soloTerm = b.toSoloTerm()
     polynomial = a.(*Polynomial)
   }
   var coefficientProducts []*big.Int
@@ -60,9 +58,11 @@ func distributeTermAcrossPolynomial(a, b polynomialThing) (ret *Polynomial) {
   }
   var coefficientArray []*big.Int
   zero := new(big.Int).SetInt64(0)
+  bigOne := new(big.Int).SetInt64(1)
   idx := new(big.Int).SetInt64(0)
   for ; idx.Cmp(soloTerm.degree()) < 0; { // x < y
     coefficientArray = append(coefficientArray, zero)
+    idx = new(big.Int).Add(idx, bigOne) // idx++
   }
   coefficientArray = append(coefficientArray, coefficientProducts...)
   ret = NewPolynomialFromArray(coefficientArray)

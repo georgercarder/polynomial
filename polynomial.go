@@ -45,6 +45,17 @@ func NewPolynomialUint64(coefficients ...uint64) (ret *Polynomial) {
   return
 }
 
+func (p *Polynomial) IsSame(a, b *Polynomial) (tf bool) {
+  if len(a.Coefficients) != len(b.Coefficients) {return}
+  for i, c := range a.Coefficients {
+    if c.Cmp(b.Coefficients[i]) != 0 {
+      return
+    }
+  }
+  tf = true
+  return
+}
+
 func (p *Polynomial) Add(a, b *Polynomial) (ret *Polynomial) {
   var coefficientArray []*big.Int
   var lowerDegreePolynomial *Polynomial
@@ -78,13 +89,16 @@ func (ps PolynomialSlice) Multiply() (ret *Polynomial) {
     half := len(ps)/2
     firstHalf := ps[:half] // FIXME double check indexing 
     secondHalf := ps[half:] 
-    firstHalfProductCH := make(chan *Polynomial)
-    go func(fh PolynomialSlice) {
+    //firstHalfProductCH := make(chan *Polynomial)
+    /*go func(fh PolynomialSlice) {
       firstHalfProductCH <- fh.Multiply()
-    }(firstHalf)
+    }(firstHalf)*/
+    firstHalfProduct := firstHalf.Multiply()
+    
     secondHalfProduct := secondHalf.Multiply()
     var twoFactors PolynomialSlice
-    twoFactors = append(twoFactors, <-firstHalfProductCH)
+    //twoFactors = append(twoFactors, <-firstHalfProductCH)
+    twoFactors = append(twoFactors, firstHalfProduct)
     twoFactors = append(twoFactors, secondHalfProduct)
     ret = twoFactors.Multiply()
   }
@@ -100,6 +114,11 @@ func (t *term) isSoloTerm() (tf bool) {
   return
 }
 
+func (t *term) toSoloTerm() (ret *term) {
+  ret = t
+  return
+}
+
 func (t *term) degree() (ret *big.Int) {
   ret = t.degree_
   return
@@ -111,10 +130,10 @@ func (t *term) coefficients() (ret []*big.Int) {
 }
 
 func (p *Polynomial) head() (t *term) {
-  degree := len(p.Coefficients)
+  degree := len(p.Coefficients)-1
   t = &term{
-        coefficient: p.Coefficients[degree-1], 
-        degree_: new(big.Int).SetInt64(int64(degree))} // TODO double check indexing
+        coefficient: p.Coefficients[degree], 
+        degree_: new(big.Int).SetInt64(int64(degree))}
   return
 }
 
@@ -128,6 +147,12 @@ func (p *Polynomial) isSoloTerm() (tf bool) {
   } else if lenCoefficients > 1 {
     tf = false
   }
+  return
+}
+
+func (p *Polynomial) toSoloTerm() (ret *term) {
+  // unchecked. assuming that `isSoloTerm` was already run
+  ret = p.head()
   return
 }
 
