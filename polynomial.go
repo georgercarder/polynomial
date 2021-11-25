@@ -46,7 +46,23 @@ func NewPolynomialUint64(coefficients ...uint64) (ret *Polynomial) {
 }
 
 func (p *Polynomial) Add(a, b *Polynomial) (ret *Polynomial) {
-  // TODO
+  var coefficientArray []*big.Int
+  var lowerDegreePolynomial *Polynomial
+  var greaterDegreePolynomial *Polynomial
+  if a.degree().Cmp(b.degree()) < 0 { // x < y
+    lowerDegreePolynomial = a
+    greaterDegreePolynomial = b
+  } else {
+    lowerDegreePolynomial = b
+    greaterDegreePolynomial = a
+  }
+  for i, c := range lowerDegreePolynomial.Coefficients {
+    coefficient := new(big.Int).Add(c, greaterDegreePolynomial.Coefficients[i])
+    coefficientArray = append(coefficientArray, coefficient) 
+  }
+  coefficientArray = append(coefficientArray, 
+                      greaterDegreePolynomial.Coefficients[len(coefficientArray):]...) // TODO check if there is index error
+  ret = NewPolynomialFromArray(coefficientArray)
   return
 } 
 
